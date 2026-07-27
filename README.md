@@ -16,6 +16,6 @@ void loop() {
     digitalWrite(LED_OUT_R, HIGH);
     delay(300); 
     digitalWrite(LED_OUT_R, LOW);
-    
 }
+
 ![result](blink.gif)
