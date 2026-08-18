@@ -1,49 +1,17 @@
-#include <Arduino.h>
+Характер натискання  Імпульсів  за логічним аналізатором  Тривалість брязкоту, мс  Імпульсів зареєстровано ESP32 
+Швидке, слабке                                        4                      1.9                              2 
+Повільне, слабке                                      5                      2.8                              3 
+Сильне                                                8                      4.1                              4 
+Повільне, сильне                                     10                      5.3                              5 
+Середня сила                                          6                      3.2                              3 
+Дуже швидке                                           3                      1.4                              2 
+Сильне                                                9                      4.7                              5 
+Слабке                                                4                      2.1                              2 
+Середня сила                                          7                      3.6                              4 
+Сильне, швидке                                        6                      3.0                              3 
 
-const int LED1 = 4;
-const int LED2 = 5;
-const int EXT_BUTTON = 18;  
-const int BOOT_BUTTON = 0;   
-int blinkDelay = 1000;        
-
-void setup()
-{
-    Serial.begin(9600);
-    pinMode(LED1, OUTPUT);
-    pinMode(LED2, OUTPUT);
-    pinMode(EXT_BUTTON, INPUT_PULLUP);
-    pinMode(BOOT_BUTTON, INPUT_PULLUP);
-    Serial.println("default mode");
-}
-
-void loop()
-{
-    //режим для зовнішньої кнопки
-    if (digitalRead(EXT_BUTTON) == HIGH)
-    {
-        blinkDelay = 500; 
-        delay(50);
-        Serial.println("external button mode");
-    }
-    //режим для boot
-    if (digitalRead(BOOT_BUTTON) == LOW)
-    {
-        blinkDelay = 2000;
-        delay(50);
-        Serial.println("boot button mode");
-    }
-    //режим для двох зажатих кнопок
-    if(digitalRead(BOOT_BUTTON) == LOW && digitalRead(EXT_BUTTON) == HIGH){
-      blinkDelay = 200;
-      delay(50);
-      Serial.println("boot and external button mode");
-    }
-  
-    digitalWrite(LED1, HIGH);
-    digitalWrite(LED2, LOW);
-    delay(blinkDelay);
-
-    digitalWrite(LED1, LOW);
-    digitalWrite(LED2, HIGH);
-    delay(blinkDelay);
-}
+мінімальний брязкіт - 1.4 мс
+максимальний - 5.3 мс;
+середня тривалість - приблизно 3.21 мс;
+кількість імпульсів за один контакт - від 3 до 10;
+ESP32 реєструє лише частину переходів, оскільки ISR налаштований на falling, логічний аналізатор при цьому може побачити всі переходи
