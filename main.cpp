@@ -1,27 +1,46 @@
 #include <Arduino.h>
 
-#define BUTTON_IN 16  
+#define LDR_PIN 4
 
-volatile uint32_t button_counter = 0; 
+#define ADC_MAX 4095.0
+#define VREF 3.1
+#define CALLBACK_DELAY 1000
 
-uint32_t last_count = 0; 
-
-void IRAM_ATTR button_isr() {
-  button_counter++;
+void setup()
+{
+    Serial.begin(115200);
+    analogReadResolution(12);
+    analogSetPinAttenuation(LDR_PIN, ADC_11db);
 }
 
-void setup() {
-  pinMode(BUTTON_IN, INPUT_PULLUP);
-  Serial.begin(115200);
-  attachInterrupt(digitalPinToInterrupt(BUTTON_IN), button_isr, FALLING);
-}
+void loop()
+{
+    int raw = analogRead(LDR_PIN);
+    float voltage = ((float)raw / ADC_MAX) * VREF;
+    float voltage_mV = voltage * 1000.0;
+    int measured_mV = analogReadMilliVolts(LDR_PIN);
+    float error = 0;
+    if (measured_mV != 0){
+        error = abs(voltage_mV - measured_mV)/ measured_mV * 100.0;
+    }
 
-void loop() {
-  if (button_counter != last_count) {
-    last_count = button_counter;
-    Serial.print("Button Pressed! Count: ");
-    Serial.println(last_count);
-  }
+    Serial.print("RAW: ");
+    Serial.print(raw);
 
-  delay(10);
+    Serial.print(" | volage: ");
+    Serial.print(voltage, 2);
+
+    Serial.print(" | calcMVolts: ");
+    Serial.print(voltage_mV, 2);
+    Serial.print(" mV");
+
+    Serial.print(" | analogReadMVolts: ");
+    Serial.print(measured_mV);
+    Serial.print(" mV");
+
+    Serial.print(" | Error: ");
+    Serial.print(error, 2);
+    Serial.println(" %");
+
+    delay(CALLBACK_DELAY);
 }
