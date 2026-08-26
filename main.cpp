@@ -1,46 +1,51 @@
 #include <Arduino.h>
 
-#define LDR_PIN 4
-
-#define ADC_MAX 4095.0
-#define VREF 3.1
-#define CALLBACK_DELAY 1000
-
-void setup()
-{
+enum class LedState{
+    On,
+    Off
+};
+class LedConfig{
+public:
+    static constexpr uint8_t LED_PIN = 16;
+    static constexpr uint32_t BLINK_INTERVAL_MS = 500;
+    static const uint8_t BLINK_COUNT = 3;
+};
+class Led{
+private:
+    uint8_t pin;
+public:
+    explicit Led(uint8_t ledPin) : pin(ledPin){}
+    void init(){
+        pinMode(pin, OUTPUT);
+        set(LedState::Off);
+    }
+    void set(LedState state){
+        if (state == LedState::On){
+            digitalWrite(pin, HIGH);
+        }
+        else{
+            digitalWrite(pin, LOW);
+        }
+    }
+};
+Led led(LedConfig::LED_PIN);
+void setup() {
     Serial.begin(115200);
-    analogReadResolution(12);
-    analogSetPinAttenuation(LDR_PIN, ADC_11db);
+    led.init();
 }
 
-void loop()
-{
-    int raw = analogRead(LDR_PIN);
-    float voltage = ((float)raw / ADC_MAX) * VREF;
-    float voltage_mV = voltage * 1000.0;
-    int measured_mV = analogReadMilliVolts(LDR_PIN);
-    float error = 0;
-    if (measured_mV != 0){
-        error = abs(voltage_mV - measured_mV)/ measured_mV * 100.0;
+void loop(){
+    static LedState ledState = LedState::Off;
+    static uint32_t previousMillis = 0;
+    const uint32_t currentMillis = millis();
+    if ((currentMillis - previousMillis) >= LedConfig::BLINK_INTERVAL_MS){
+        previousMillis = currentMillis;
+        if (ledState == LedState::Off){
+            ledState = LedState::On;
+        }
+        else{
+            ledState = LedState::Off;
+        }
+        led.set(ledState);
     }
-
-    Serial.print("RAW: ");
-    Serial.print(raw);
-
-    Serial.print(" | volage: ");
-    Serial.print(voltage, 2);
-
-    Serial.print(" | calcMVolts: ");
-    Serial.print(voltage_mV, 2);
-    Serial.print(" mV");
-
-    Serial.print(" | analogReadMVolts: ");
-    Serial.print(measured_mV);
-    Serial.print(" mV");
-
-    Serial.print(" | Error: ");
-    Serial.print(error, 2);
-    Serial.println(" %");
-
-    delay(CALLBACK_DELAY);
 }
